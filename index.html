@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Command Center</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080b12; --panel:#101725; --panel2:#151d2e; --line:#22304a;
+  --text:#e8eefb; --muted:#8a99b5; --accent:#4f8cff; --accent2:#25d9a4;
+  --warn:#ffb020; --danger:#ff5f6d; --radius:14px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Inter,sans-serif;
+  background:radial-gradient(1200px 700px at 12% -12%,#16233c 0%,transparent 62%),var(--bg);
+  color:var(--text);min-height:100vh;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.app{display:flex;min-height:100vh}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar{
+  width:252px;flex:0 0 252px;padding:22px 14px;position:sticky;top:0;height:100vh;
+  overflow-y:auto;border-right:1px solid var(--line);
+  background:rgba(10,15,25,.65);backdrop-filter:blur(10px);
+}
+.logo{display:flex;align-items:center;gap:10px;padding:0 10px 18px;font-weight:700;font-size:16px;letter-spacing:.2px}
+.logo .dot{width:10px;height:10px;border-radius:50%;background:var(--accent2);box-shadow:0 0 14px var(--accent2)}
+.logo small{display:block;font-weight:400;font-size:11px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:2px;margin-bottom:20px}
+.nav a{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;
+  color:var(--muted);text-decoration:none;font-size:13.5px;transition:.15s;
+}
+.nav a:hover{background:var(--panel2);color:var(--text)}
+.nav a .ico{font-size:15px;width:18px;text-align:center}
+.progress-wrap{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.progress-top{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px}
+.bar{height:7px;border-radius:99px;background:#1b2437;overflow:hidden}
+.bar > div{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
+.side-foot{margin-top:16px;font-size:11px;color:#5a6780;padding:0 10px;line-height:1.7}
+.side-foot button{
+  background:none;border:none;color:#5a6780;font-size:11px;cursor:pointer;
+  text-decoration:underline;padding:0;font-family:inherit;
+}
+.side-foot button:hover{color:var(--danger)}
+
+/* ---------- MAIN ---------- */
+.main{flex:1;min-width:0}
+.topbar{
+  position:sticky;top:0;z-index:30;padding:16px 28px;
+  background:rgba(8,11,18,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+}
+.searchbox{position:relative;max-width:720px}
+.searchbox .mag{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;pointer-events:none}
+#search{
+  width:100%;padding:14px 108px 14px 44px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel);color:var(--text);font-size:15px;font-family:inherit;outline:none;transition:.2s;
+}
+#search::placeholder{color:#5f6d87}
+#search:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(79,140,255,.13)}
+#clearBtn{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+  padding:7px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;display:none;
+}
+#clearBtn:hover{color:var(--text)}
+.content{padding:26px 28px 80px;max-width:1120px}
+
+/* ---------- SECTIONS ---------- */
+.section{margin-bottom:44px;scroll-margin-top:92px}
+.sec-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.sec-head .ico{font-size:22px;line-height:1.2}
+.sec-head h2{font-size:19px;letter-spacing:.2px}
+.sec-head p{font-size:12.5px;color:var(--muted);margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+
+/* ---------- CARDS ---------- */
+.card{
+  background:linear-gradient(180deg,var(--panel) 0%,#0e1522 100%);
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 17px;position:relative;transition:.18s;
+}
+.card:hover{border-color:#31415f;transform:translateY(-1px)}
+.card h3{font-size:14.5px;margin-bottom:9px;padding-right:52px;letter-spacing:.15px;display:flex;align-items:flex-start;gap:8px}
+.card h3 .tick{margin-top:2px}
+.card p{font-size:13.2px;color:#b9c5da;margin:7px 0}
+.card ul{list-style:none;margin:7px 0;display:flex;flex-direction:column;gap:6px}
+.card li{font-size:13.2px;color:#b9c5da;padding-left:16px;position:relative}
+.card li::before{content:"";position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.65}
+.card li.task{padding-left:0;display:flex;gap:9px;align-items:flex-start}
+.card li.task::before{display:none}
+.card strong{color:#e8eefb;font-weight:600}
+mark{background:rgba(255,176,32,.28);color:#ffd98a;border-radius:3px;padding:0 2px}
+
+.tick{
+  flex:0 0 auto;width:17px;height:17px;border-radius:5px;cursor:pointer;
+  border:1.5px solid #3a4a68;background:transparent;position:relative;transition:.15s;padding:0;
+}
+.tick:hover{border-color:var(--accent)}
+.tick.on{background:var(--accent2);border-color:var(--accent2)}
+.tick.on::after{
+  content:"";position:absolute;left:5px;top:1.5px;width:4px;height:8px;
+  border:solid #06231a;border-width:0 2px 2px 0;transform:rotate(45deg);
+}
+.task.done span{text-decoration:line-through;color:#5f6d87}
+
+.card-actions{position:absolute;top:12px;right:12px;display:flex;gap:4px;opacity:0;transition:.15s}
+.card:hover .card-actions{opacity:1}
+.icon-btn{
+  width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--muted);cursor:pointer;font-size:12px;line-height:1;display:grid;place-items:center;padding:0;
+}
+.icon-btn:hover{color:var(--text);border-color:#3a4a68}
+.icon-btn.del:hover{color:var(--danger);border-color:var(--danger)}
+
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px}
+.tag{font-size:10.5px;color:#7c8aa5;background:#131c2c;border:1px solid #1e2a40;padding:2px 8px;border-radius:99px;letter-spacing:.3px}
+
+/* ---------- QUOTE CARD ---------- */
+.card.quote{
+  grid-column:1/-1;
+  background:linear-gradient(120deg,rgba(79,140,255,.14),rgba(37,217,164,.10));
+  border-color:#2c4266;padding:26px 28px;
+}
+.card.quote blockquote{font-size:17px;line-height:1.6;font-weight:500;color:#eef4ff;font-style:italic}
+.card.quote .who{margin-top:12px;font-size:12px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase}
+.card.quote .lbl{font-size:11px;color:var(--accent2);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-weight:600}
+
+/* ---------- PROFILE FORM ---------- */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pgrid label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.pgrid label.full{grid-column:1/-1}
+.pgrid input,.pgrid textarea{
+  background:#0c1320;border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+  color:var(--text);font-size:13.5px;font-family:inherit;outline:none;resize:vertical;transition:.15s;
+}
+.pgrid input:focus,.pgrid textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,140,255,.12)}
+.pgrid textarea{min-height:64px;line-height:1.5}
+
+/* ---------- EMPTY ---------- */
+.empty{
+  text-align:center;padding:70px 20px;color:var(--muted);
+  border:1px dashed var(--line);border-radius:16px;background:rgba(16,23,37,.4);
+}
+.empty .big{font-size:34px;margin-bottom:12px}
+.empty h3{font-size:16px;color:var(--text);margin-bottom:6px}
+
+/* ---------- MODAL ---------- */
+.modal{
+  position:fixed;inset:0;background:rgba(4,7,12,.75);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+}
+.modal.open{display:flex}
+.modal-box{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:22px;width:100%;max-width:560px;box-shadow:0 24px 70px rgba(0,0,0,.6);
+}
+.modal-box h3{font-size:15px;margin-bottom:14px}
+.modal-box input,.modal-box textarea{
+  width:100%;background:#0c1320;border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px;color:var(--text);font-size:13.5px;font-family:inherit;outline:none;
+  margin-bottom:10px;resize:vertical;
+}
+.modal-box textarea{min-height:190px;line-height:1.55}
+.modal-box input:focus,.modal-box textarea:focus{border-color:var(--accent)}
+.hint{font-size:11.5px;color:#5f6d87;margin-bottom:14px;line-height:1.6}
+.modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:6px}
+.btn{
+  padding:9px 17px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;transition:.15s;
+}
+.btn:hover{border-color:#3a4a68}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.primary:hover{background:#3d7cf5}
+.btn.danger{color:var(--danger);border-color:#4a2530}
+.btn.danger:hover{background:#2a1420}
+
+.add-card{
+  border:1px dashed #2c3a56;background:transparent;border-radius:var(--radius);
+  color:#5f6d87;font-size:13px;font-family:inherit;cursor:pointer;
+  display:grid;place-items:center;min-height:88px;transition:.15s;
+}
+.add-card:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,140,255,.05)}
+
+/* ---------- MOBILE ---------- */
+@media(max-width:880px){
+  .app{flex-direction:column}
+  .sidebar{
+    position:static;width:100%;flex:none;height:auto;padding:14px;
+    border-right:none;border-bottom:1px solid var(--line);
+  }
+  .logo{padding-bottom:12px}
+  .nav{flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none}
+  .nav::-webkit-scrollbar{display:none}
+  .nav a{white-space:nowrap;padding:7px 11px;font-size:12.5px;background:var(--panel);border:1px solid var(--line)}
+  .nav a .ico{font-size:13px}
+  .progress-wrap{margin-bottom:4px}
+  .side-foot{margin-top:10px}
+  .topbar{padding:12px 16px}
+  #search{padding:12px 92px 12px 42px;font-size:14px}
+  .content{padding:20px 16px 70px}
+  .grid{grid-template-columns:1fr}
+  .pgrid{grid-template-columns:1fr}
+  .card.quote{padding:20px}
+  .card.quote blockquote{font-size:15px}
+  .section{margin-bottom:34px}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="dot"></span>
+      <div>Command Center<small>Build. Close. Grow.</small></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="progress-wrap">
+      <div class="progress-top"><span>Momentum</span><span id="pText">0 / 0</span></div>
+      <div class="bar"><div id="pBar"></div></div>
+    </div>
+    <div class="side-foot">
+      <button id="resetAll">Reset all my changes</button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <div class="topbar">
+      <div class="searchbox">
+        <span class="mag">🔍</span>
+        <input id="search" type="text" placeholder="Search anything… pricing, closing, scope creep, goals, confidence" autocomplete="off">
+        <button id="clearBtn">Clear</button>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3 id="mHeading">Edit</h3>
+    <input id="mTitle" placeholder="Title">
+    <textarea id="mText" placeholder="Write anything. Use &quot;- &quot; for bullets and &quot;- [ ] &quot; for checkboxes."></textarea>
+    <div class="hint">
+      Tip: start a line with <b>-&nbsp;</b> for a bullet, <b>-&nbsp;[&nbsp;]&nbsp;</b> for a tickable task, and wrap words in <b>**double stars**</b> to make them bold.
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="mDelete">Delete</button>
+      <button class="btn" id="mCancel">Cancel</button>
+      <button class="btn primary" id="mSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   1. QUOTES
+   ========================================================= */
+const QUOTES = [
+  {t:"The best time to start was yesterday. The next best time is right now.", a:"Unknown"},
+  {t:"You don't have to be great to start, but you have to start to be great.", a:"Zig Ziglar"},
+  {t:"Nobody is coming to save you. That's not bad news — it means the outcome is in your hands.", a:"Discipline"},
+  {t:"Your first 10 clients won't come from ads. They'll come from you being visible and relentless.", a:"Founder Rule"},
+  {t:"Price is only an issue in the absence of value.", a:"Sales Truth"},
+  {t:"Work on the business, not just in the business.", a:"Michael Gerber"},
+  {t:"A confused mind says no. Clarity sells.", a:"Sales Truth"},
+  {t:"You are not behind. You are early. Most people never even start.", a:"Reminder"},
+  {t:"Do the thing you fear most, and the death of fear is certain.", a:"Ralph Waldo Emerson"},
+  {t:"Small daily improvements are the key to staggering long-term results.", a:"Robin Sharma"},
+  {t:"If you don't have a system, you don't have a business. You have a job.", a:"Scaling Rule"},
+  {t:"The market rewards the specific, not the general. Pick a niche and dominate it.", a:"Positioning"},
+  {t:"Every 'no' you get is data. Every 'yes' is a repeatable pattern. Track both.", a:"Sales Rule"},
+  {t:"Clients don't buy code. They buy outcomes, certainty and peace of mind.", a:"Agency Truth"},
+  {t:"Discipline is choosing between what you want now and what you want most.", a:"Abraham Lincoln"},
+  {t:"Your network is your net worth. One relationship can change your whole year.", a:"Business"},
+  {t:"Ship it. Perfect is the enemy of paid.", a:"Builder Rule"},
+  {t:"If you're the smartest person in the room, you're in the wrong room.", a:"Growth"},
+  {t:"Consistency beats intensity. Show up 300 days, not 30.", a:"Compounding"},
+  {t:"Charge what you're worth, then become worth more.", a:"Pricing"},
+  {t:"The pain of discipline weighs ounces. The pain of regret weighs tons.", a:"Jim Rohn"},
+  {t:"Your competition isn't other agencies. It's your own inconsistency.", a:"Reminder"},
+  {t:"Serve more people. Solve bigger problems. Charge more money. Repeat.", a:"Growth Loop"},
+  {t:"Nobody cares about your portfolio. They care about their problem. Talk about them.", a:"Client Rule"},
+  {t:"Build the business you'd want to work at for the next 20 years.", a:"Vision"}
+];
+
+/* =========================================================
+   2. ALL CONTENT
+   ========================================================= */
+const DATA = [
+
+/* ---------------- PROFILE ---------------- */
+{
+  id:'profile', icon:'🪪', title:'My Profile', sub:'Fill this once. Read it every morning.',
+  cards:[ {id:'profile-form', kind:'profile', t:'Who I Am'} ]
+},
+
+/* ---------------- DAILY FUEL ---------------- */
+{
+  id:'fuel', icon:'🔥', title:'Daily Fuel', sub:'Open this first. Before email, before WhatsApp, before anything.',
+  cards:[
+    {id:'quote', kind:'quote'},
+
+    {id:'morning', t:'Morning Routine — Before Anything Else', track:false, d:
+`- [ ] Wake up. Drink water. **No phone for the first 30 minutes.**
+- [ ] Read my mission and my top 3 priorities **out loud.**
+- [ ] 90 minutes of deep work on the highest-value task — no messages, no tabs.
+- [ ] Send **3 outreach messages or follow-ups.**
+- [ ] 20 minutes of movement. Non-negotiable.
+- [ ] 10 pages of a book.
+- [ ] Write down 1 thing I learned or 1 mistake I made today.`},
+
+    {id:'threethings', t:'The 3 Things Rule', d:
+`Every night write the 3 things that would make tomorrow a win. Nothing else matters until those 3 are done.
+
+- **One thing that makes money** — a proposal, a follow-up, a delivery.
+- **One thing that builds the business** — a system, a hire, a process, a product.
+- **One thing that builds me** — a skill, my health, my mind.
+
+If the day ends and those 3 are done, the day was a success. No guilt. No scrolling at midnight wondering where the day went.`},
+
+    {id:'quitting', t:'When You Want To Quit — Read This', d:
+`- Nobody is coming to save you. That's not bad news — it means **the outcome is 100% in your hands.**
+- You are not behind. You are early. Most people never even start.
+- The feeling of "I don't know enough" **never goes away.** Ship anyway.
+- One more client. One more project. One more week. That's how every software house on earth was built.
+- In 5 years you'll either have the business or the excuse. **Pick now.**
+- Your future self is watching you right now through your decisions.
+- The version of you that has the agency, the team, the freedom — that version was built on days exactly like today.`},
+
+    {id:'discipline', t:'Discipline > Motivation', d:
+`Motivation is a guest. Discipline is the employee who shows up every day whether he feels like it or not.
+
+- Start at the **scheduled time**, not when you feel ready.
+- Work in **blocks**, not whenever.
+- When you don't feel like working, commit to **just 10 minutes.** 90% of the time you keep going.
+- Your mood is not a valid reason to break a promise to yourself.`},
+
+    {id:'identity', t:'Who I Am Becoming', d:
+`I am not "trying to start a software house." **I am the founder of a software house.**
+
+- I speak about my business with certainty.
+- I do not apologise for my prices.
+- I do not chase clients. I attract them by being excellent and visible.
+- I keep my word — to clients, to my team, and to myself.
+- I am the calmest person in every room, because I am the most prepared.`}
+  ]
+},
+
+/* ---------------- GOALS ---------------- */
+{
+  id:'goals', icon:'🎯', title:'Goals & Vision', sub:'Vague goals create vague results. Make them specific, then tick them off.',
+  cards:[
+    {id:'g90', t:'90-Day Goals', d:
+`- [ ] Get my portfolio / website live and looking sharp
+- [ ] Define one clear niche and one clear offer
+- [ ] Build a list of 100 potential clients
+- [ ] Send 100 personalised outreach messages
+- [ ] Book 10 discovery calls
+- [ ] Close 2 paying clients
+- [ ] Set up contracts, invoices and a payment process
+- [ ] Save 3 months of personal runway`},
+
+    {id:'g1y', t:'1-Year Goals', d:
+`- [ ] Hit a consistent monthly revenue number
+- [ ] Have 3–5 retainer clients (predictable income)
+- [ ] Build 2–3 repeatable service packages
+- [ ] Document delivery so it doesn't depend on me
+- [ ] Hire my first person (dev, designer or VA)
+- [ ] Build a public presence — post 3x a week
+- [ ] Have 6 months of business runway in the bank`},
+
+    {id:'g3y', t:'3-Year Vision', d:
+`- A team of 6–10 people delivering without me in every call
+- Two income streams: services + a product/SaaS
+- Known as **the go-to studio** for my niche
+- My personal income replaced by the business
+- Systems, SOPs and a brand that runs whether I'm there or not`},
+
+    {id:'g5y', t:'5-Year Vision', d:
+`- A software house with a real brand, not just a freelancer with a logo
+- 20+ people, multiple departments, a leadership layer
+- Recurring revenue covering all fixed costs
+- Freedom: I choose which projects I take
+- Mentoring others, giving back, helping businesses grow at scale
+- Financial freedom for my family`},
+
+    {id:'standards', t:'Non-Negotiable Standards', d:
+`- I never deliver late without warning the client early.
+- I never take a project without a signed agreement and a deposit.
+- I never argue about price — I either justify value or walk away.
+- I never promise something my team cannot deliver.
+- I never skip a follow-up. Follow-up is where the money is.
+- I never let a small problem become a big one — I raise it in 24 hours.`}
+  ]
+},
+
+/* ---------------- GROWTH PLAN ---------------- */
+{
+  id:'growth', icon:'🏗️', title:'Software House Growth Plan', sub:'The exact phase-by-phase path from zero to a real agency.',
+  cards:[
+    {id:'phase1', t:'Phase 1 — Foundation (Month 0–3)', d:
+`**Goal: look like a real business and know exactly what you sell.**
+
+- [ ] Pick **one niche** (e.g. restaurants, clinics, real estate, logistics, e-commerce).
+- [ ] Pick **2–3 services only** — don't sell "everything".
+- [ ] Build a clean 3–5 page website: Home, Services, Work, About, Contact.
+- [ ] Write 3 case studies (personal projects count — frame them as problems solved).
+- [ ] Set up: business email, professional invoicing, contract template, NDA template.
+- [ ] Set your **minimum project price** and never go below it.
+- [ ] Create your portfolio with real screenshots and results.
+
+**Rule:** Do not spend 3 months "preparing". You should be talking to potential clients in week 2.`},
+
+    {id:'phase2', t:'Phase 2 — First Paying Clients (Month 3–6)', d:
+`**Goal: cash in the door, proof it works.**
+
+- [ ] Build a list of 100 target businesses in your niche.
+- [ ] Personalised outreach: 10 messages a day, every day. No copy-paste spam.
+- [ ] Offer a **low-risk entry offer** (a paid audit, a landing page, a small fix) to start the relationship.
+- [ ] Take every discovery call — even if the client seems small. You're practising.
+- [ ] Close 2–5 clients. Deliver brilliantly. Over-deliver on communication, not on scope.
+- [ ] After every project, ask for a testimonial and 2 referrals. **Every single time.**
+- [ ] Track every number: messages sent, replies, calls booked, proposals sent, closed.
+
+**Rule:** You are not selling software. You are selling a solved problem.`},
+
+    {id:'phase3', t:'Phase 3 — Systems & Repeatable Delivery (Month 6–12)', d:
+`**Goal: the same result, every time, without chaos.**
+
+- [ ] Turn your services into **fixed packages** with fixed prices and fixed timelines.
+- [ ] Write SOPs for: onboarding, discovery, design, development, QA, deployment, handover.
+- [ ] Use one project management tool for everything (Notion, ClickUp, Trello).
+- [ ] Create a client portal or a shared board so clients stop asking "where are we?"
+- [ ] Add **monthly retainers** (maintenance, hosting, support, SEO) for predictable income.
+- [ ] Raise your prices by 20–30% for new clients.
+- [ ] Build a referral program — 10% of first invoice for anyone who sends you a client.
+
+**Rule:** If you repeat something 3 times, write it down. That document is the business.`},
+
+    {id:'phase4', t:'Phase 4 — Team & Delegation (Year 1–2)', d:
+`**Goal: stop being the bottleneck.**
+
+- [ ] Hire your first contractor (developer or designer) — pay per project at first.
+- [ ] Hire a VA to handle admin, scheduling and follow-ups.
+- [ ] Move yourself to **sales + strategy + client relationships only.**
+- [ ] Give every project a clear owner. No project should depend on you to move.
+- [ ] Introduce weekly team stand-ups and a monthly review.
+- [ ] Build a small bench of trusted freelancers for overflow.
+- [ ] Start documenting your hiring process and your training process.
+
+**Rule:** Your job is no longer to build. Your job is to make sure building happens.`},
+
+    {id:'phase5', t:'Phase 5 — Brand & Scale (Year 2–5)', d:
+`**Goal: clients come to you, and the business runs without you.**
+
+- [ ] Publish content consistently: case studies, teardowns, results, lessons.
+- [ ] Build partnerships with complementary agencies (marketing, design, accounting firms).
+- [ ] Consider a product: SaaS, template kit, or a subscription service.
+- [ ] Build a leadership layer — project managers, team leads.
+- [ ] Move to retainer-first revenue so at least 60% of income is recurring.
+- [ ] Build a real employer brand — people want to work with you.
+- [ ] Think in systems, not tasks. Every month, remove yourself from one more process.`},
+
+    {id:'pillars', t:'The 5 Pillars — Check These Every Week', d:
+`- **Sales** — Are you talking to new potential clients every single week?
+- **Delivery** — Are projects on time, on scope, and is the client happy?
+- **Talent** — Do you have the right people, and are they growing?
+- **Finance** — Do you know your numbers? Revenue, costs, runway, profit?
+- **Brand** — Is your name getting out there? Content, referrals, reputation?
+
+**Any pillar ignored for a month becomes a crisis in three months.**`}
+  ]
+},
+
+/* ---------------- CLIENT PLAYBOOK ---------------- */
+{
+  id:'clients', icon:'🤝', title:'Client Playbook', sub:'How to talk, how to behave, how to keep them forever.',
+  cards:[
+    {id:'discovery', t:'Discovery Call — Step by Step Script', d:
+`**1. Warm open (2 min)**
+"Thanks for making time. Before I talk about anything, I want to understand your business. Is that alright?"
+
+**2. Situation (5 min)**
+- "Walk me through what you do and how you currently handle this."
+- "What's working well right now?"
+
+**3. Problem (10 min) — dig deep**
+- "What's the biggest frustration with the current setup?"
+- "How much is this costing you — in time, money, or lost customers?"
+- "What happens if this doesn't get fixed in the next 6 months?"
+
+**4. Desired outcome (5 min)**
+- "If this was solved perfectly, what would that look like for you?"
+- "How would you measure success?"
+
+**5. Decision process (5 min)**
+- "Who else is involved in this decision?"
+- "What's your timeline?"
+- "Do you have a budget range in mind?"
+
+**6. Close the call (2 min)**
+"Based on what you've told me, I think I can help. I'll send you a proposal by [specific day]. Can we book a 20-minute call for [specific day/time] to walk through it?"
+
+**Never end a call without a scheduled next step.**`},
+
+    {id:'confidence', t:'How To Talk With Confidence', d:
+`- **Slow down.** Fast talking = nervous. Pause after sentences. Silence is power.
+- **Lower your pitch** slightly and speak from your chest, not your throat.
+- **Never say "I think", "maybe", "sort of", "just", "kind of".** Cut filler words.
+- **Don't apologise for your price, your timeline, or your process.** State it and stop talking.
+- **You are the expert in the room.** They hired you for what you know. Act like it.
+- **Prepare 3 stories** — a project you solved, a problem you caught, a result you delivered. Tell them naturally.
+- **Ask more than you talk.** The person asking questions controls the conversation.
+- **Never badmouth competitors.** Just explain what makes you different.
+- **Record your calls** (with permission) and listen back. It's painful and it works.
+- Before every call: 5 deep breaths, stand up, shoulders back, smile.
+
+**The secret nobody tells you:** confidence is not a feeling. It's preparation plus repetition. Do 50 calls and you will be confident. There is no shortcut.`},
+
+    {id:'pricing', t:'Pricing Rules — Never Break These', d:
+`- **Never give a price on the first call.** "I need to understand the scope first — I'll send a written proposal."
+- **Never quote hourly** unless the client insists. Hourly punishes you for being fast.
+- **Always give 2–3 options**, not one price:
+  - Starter — the essentials
+  - Standard — the recommended one (put this in the middle, it sells most)
+  - Premium — everything + ongoing support
+- **Always charge a deposit** — 40–50% upfront, before any work starts. No exceptions. Ever.
+- **Never discount without removing scope.** "I can do that price if we drop X."
+- **Add a change-request clause:** anything outside the agreed scope is quoted separately.
+- **Raise your prices** every 3–5 new clients until you start hearing "that's expensive" occasionally.
+- **The cheapest client is always the most difficult.** Remember that when you're tempted.
+
+**Pricing formula:** (your monthly income target ÷ projects you can handle per month) + 30% buffer for revisions, taxes and risk.`},
+
+    {id:'objections', t:'Handling Objections', d:
+`**"It's too expensive."**
+→ "I understand. Compared to what — another quote, or your budget? … Because if the problem costs you X per month, this pays for itself in Y months. Would it help if we split it into phases?"
+
+**"I need to think about it."**
+→ "Of course. What specifically do you want to think through — the price, the timeline, or whether this will actually work?" *(then solve that one thing)*
+
+**"Can you do it cheaper?"**
+→ "I can, but I'd have to remove something. Which part matters least to you?"
+
+**"We'll do it later."**
+→ "That's fine. What would need to change for this to become a priority? … Can I check back in 3 weeks?"
+
+**"Can you just start and we'll sort the paperwork later?"**
+→ "I'd love to — my process requires a signed agreement and deposit before I book the team. It protects both of us."
+
+**"My cousin can do it for less."**
+→ "He might. What happens if it breaks in 6 months and you need support? That's what you're really paying for with us."
+
+**Golden rule:** Never argue. Agree, then reframe. The moment you get defensive, you've lost.`},
+
+    {id:'closing', t:'The Close — How To Get The "Yes"', d:
+`**The 5-step close**
+
+1. **Recap the pain.** "So the main issue is X, and it's costing you Y. Right?"
+2. **Present the outcome, not the features.** Describe their business *after* — more customers, less admin, more revenue. Not "we use React".
+3. **Give two options, not one.** Let them choose *which*, not *whether*.
+4. **Ask directly.** "Do you want to start with Starter or the Full package?"
+5. **Then say nothing.** Silence after the ask. The first person who talks loses.
+
+**Signals they're ready to buy:**
+- They ask about start dates, timelines, or payment terms
+- They ask "what do you need from me?"
+- They stop asking about price and start asking about process
+- They start saying "we" instead of "you"
+
+**After the call, within 2 hours:**
+- Send a short recap message
+- Send the proposal within 24 hours, never later
+- Book the follow-up call before you hang up
+
+**The follow-up rule:** 80% of deals close after the 3rd–5th follow-up. Most people quit after the 1st. Follow up on day 3, day 7, day 14, day 30.
+
+**Never chase. Follow up.** There's a difference — chasing is desperate, following up is professional.`},
+
+    {id:'onboarding', t:'Onboarding A New Client', d:
+`- [ ] Signed agreement + deposit received **before anything starts**
+- [ ] Kick-off call booked within 3 days
+- [ ] Send a welcome pack: who's who, timeline, communication rules, what you need from them
+- [ ] Set up a shared project board they can see
+- [ ] Agree on the **one main point of contact** on their side
+- [ ] Agree on a fixed weekly update day and time
+- [ ] Agree on revision rounds (2 is standard — more costs extra)
+- [ ] Confirm the exact definition of "done"
+
+**Communication rules to state on day one:**
+- "I reply within one business day."
+- "Weekly updates every [day]."
+- "If anything changes in scope, I'll flag it immediately with a cost and timeline impact."
+- "I'd rather tell you bad news early than late."`},
+
+    {id:'redflags', t:'Red Flags — Walk Away', d:
+`- They haggle hard before you've even started
+- They want to "see how it goes" before paying a deposit
+- They have no clear idea what they want but a very clear idea of the price
+- They've fired 3 agencies before you
+- They refuse to sign a contract
+- They demand daily calls and instant replies for a small project
+- They talk down to you or your team
+- "It's a simple project, should be quick" — it never is
+- They want you to start before the paperwork is done
+- They pay late on the first invoice
+
+**Rule:** The client who is difficult in the sales process will be 10x more difficult during delivery. Trust the signal. Say no politely and move on.`},
+
+    {id:'retention', t:'Keeping Clients Forever', d:
+`- **Update them before they ask.** Silence makes clients nervous.
+- **Tell them about problems early.** Bad news early is a professional. Bad news late is a disaster.
+- **Monthly check-in call** even when there's no project running.
+- **Send value, not just invoices.** A tip, a resource, an idea that helps their business.
+- **Ask for feedback** after every project: "What could we have done better?"
+- **Upsell by solving their next problem**, not by pushing services.
+- **Surprise them once.** Deliver a day early, add a small free improvement.
+- **Ask for referrals at the happiest moment** — right after a successful delivery.
+
+**A retained client is worth 5 new clients.** Don't chase new business so hard that you neglect the people already paying you.`}
+  ]
+},
+
+/* ---------------- SALES & MONEY ---------------- */
+{
+  id:'sales', icon:'💰', title:'Sales & Money', sub:'Cash flow, contracts and the numbers that keep the lights on.',
+  cards:[
+    {id:'outreach', t:'Outreach That Actually Works', d:
+`**Personalise or don't bother.** Generic messages are spam and everyone can smell them.
+
+**Structure of a good message (keep it under 90 words):**
+1. Something specific about *them* — a real observation
+2. A problem they likely have
+3. A short, low-commitment ask
+
+**Example:**
+"Hi [Name] — I noticed your booking page takes 6 taps to complete on mobile. I work with [niche] businesses on exactly this. We usually cut drop-off by 30–40%. Worth a 10-minute call to see if it applies to you?"
+
+**Rules:**
+- No attachments on the first message
+- No "I hope this finds you well"
+- No paragraphs. Short lines.
+- Follow up 3 times. Then stop.
+- Track everything in a simple sheet.
+
+**Volume:** 10 personalised messages a day = 300 a month = roughly 30 replies = 8–10 calls = 2–4 clients.`},
+
+    {id:'contracts', t:'Every Contract Must Have', d:
+`- [ ] Exact scope of work, item by item
+- [ ] What is **NOT** included (this saves you more than the scope clause)
+- [ ] Total price, deposit amount, payment schedule
+- [ ] Timeline with milestones and client-side deadlines
+- [ ] Number of revision rounds included, and the cost of extra ones
+- [ ] Change-request process: written request → quote → approval → new timeline
+- [ ] Late payment terms and interest
+- [ ] Intellectual property transfer only **after final payment**
+- [ ] Termination clause
+- [ ] Limitation of liability
+- [ ] Confidentiality / NDA
+- [ ] Who owns the hosting, domain and accounts
+
+**Never start work without it. Not for a friend. Not for family. Not for a "quick job".**`},
+
+    {id:'cashflow', t:'Cash Flow Rules', d:
+`- **50% deposit minimum.** 40% deposit + 30% midpoint + 30% on delivery is also fine. Never 100% on delivery.
+- **Invoice immediately.** Don't wait until the end of the month.
+- **Keep 6 months of business expenses** in the bank before you take a big salary.
+- **Pay yourself a fixed salary**, not whatever's left.
+- **Set aside 25–30% for tax** the moment money lands. Do not touch it.
+- **Track 3 numbers weekly:** money in, money out, money owed to you.
+- **Chase late invoices on day 1.** Not day 30. Be polite, be firm, be consistent.
+- **Never take a project that would bankrupt you if they didn't pay.**
+
+**The #1 killer of software houses is not lack of clients. It's bad cash flow with good clients.**`},
+
+    {id:'metrics', t:'Numbers I Must Know Every Week', d:
+`- Leads contacted this week
+- Replies received
+- Calls booked
+- Proposals sent
+- Deals closed
+- Revenue booked
+- Revenue collected
+- Outstanding invoices
+- Projects on time / late
+- Hours I personally spent on delivery vs. on growth
+
+**If you don't measure it, you're guessing. And guessing is expensive.**`}
+  ]
+},
+
+/* ---------------- MISTAKES ---------------- */
+{
+  id:'mistakes', icon:'⚠️', title:'Mistakes I Must Avoid', sub:'Learn from these before they cost you money, time or reputation.',
+  cards:[
+    {id:'m1', t:'Pricing & Money Mistakes', d:
+`- **Charging too little to "win" the client.** You'll attract the worst clients and burn out.
+- **Quoting without understanding the scope.** You'll eat the difference.
+- **No deposit.** You'll chase money for months.
+- **Discounting without removing scope.** You just told them your price was fake.
+- **Working without a contract** because "they seem nice."
+- **Unlimited revisions.** This single clause has killed more agencies than anything else.
+- **Forgetting taxes**, then panicking at the end of the year.
+- **Mixing personal and business money.** Separate accounts from day one.`},
+
+    {id:'m2', t:'Scope & Delivery Mistakes', d:
+`- **Scope creep.** "While you're in there, can you just add…" — every one of these is a new quote.
+- **Over-promising to win the deal.** The delivery team pays for your optimism.
+- **No written requirements.** "I thought you meant…" is how projects die.
+- **Building before the client approves the design/flow.** Rework costs double.
+- **Being the only person who knows how a project works.** Document as you go.
+- **Ignoring QA.** One broken feature destroys the trust of ten working ones.
+- **Delivering late without warning.** Late + silent = fired. Late + warned = forgivable.`},
+
+    {id:'m3', t:'Communication Mistakes', d:
+`- **Going quiet when things go wrong.** Silence is the fastest way to lose a client.
+- **Answering emotionally.** Never reply to an angry message immediately. Wait an hour. Then reply calmly.
+- **Saying "yes" to everything.** Every yes to the wrong thing is a no to the right thing.
+- **Arguing about who's right.** You can be right, or you can keep the client. Usually pick the client.
+- **Talking too much on calls.** Ask, then listen. Listen more than you speak.
+- **Not documenting decisions.** "As discussed" without a written record means it never happened.`},
+
+    {id:'m4', t:'Business & Founder Mistakes', d:
+`- **Trying to serve everyone.** A generalist competes on price. A specialist competes on value.
+- **Doing everything yourself forever.** You become the ceiling of your own business.
+- **Hiring too late** and **hiring too fast** — both are expensive. Hire when the work is consistent, not when it's a one-off spike.
+- **Skipping marketing when you're busy.** Then the projects end and you have no pipeline. **Always be prospecting.**
+- **Not firing bad clients.** One toxic client costs you three good ones in energy alone.
+- **Comparing yourself to agencies 10 years ahead.** Compare yourself to last month.
+- **Working 16-hour days and calling it commitment.** It's usually bad planning.
+- **Never taking a day off.** Burnout is the most expensive mistake on this list.
+- **Waiting until you "feel ready."** Ready is a myth. Start, then get ready.`}
+  ]
+},
+
+/* ---------------- LESSONS ---------------- */
+{
+  id:'lessons', icon:'📚', title:'Lessons I Learned', sub:'Your personal log. Add one after every project, every mistake, every win.',
+  cards:[
+    {id:'l1', t:'Lesson Log — How To Use This', d:
+`After every project, every lost deal, every difficult client — write one line here.
+
+**The format:**
+- What happened
+- What it cost me
+- What I'll do differently next time
+
+**Example:**
+"Said yes to a 3-day deadline. Delivered in 9 days. Client lost trust. **Next time: never promise a date before the team confirms it.**"
+
+A lesson not written down is a lesson you'll pay for twice.`},
+
+    {id:'l2', t:'My Lessons (add your own)', d:
+`- [ ] Write your first lesson here — tap the pencil icon above.
+- [ ] Every lost deal gets a lesson.
+- [ ] Every difficult client gets a lesson.
+- [ ] Every project that went over budget gets a lesson.
+- [ ] Every compliment from a client gets written down too — so you know what to repeat.`}
+  ]
+},
+
+/* ---------------- PRODUCTIVITY ---------------- */
+{
+  id:'productivity', icon:'⚡', title:'Productivity System', sub:'How to get 10 hours of work done in 6.',
+  cards:[
+    {id:'deepwork', t:'Deep Work Blocks', d:
+`**The shape of a productive day:**
+- **Block 1 (morning):** highest-value task. Sales, proposals, or your hardest build task. Phone in another room.
+- **Block 2 (midday):** client calls, team check-ins, communication.
+- **Block 3 (afternoon):** delivery work, admin, learning.
+- **Block 4 (evening, short):** plan tomorrow's 3 things. Shut the laptop.
+
+**Rules:**
+- One task at a time. Multitasking is a myth that costs you 40% of your output.
+- Batch messages — check them at 3 fixed times, not every 5 minutes.
+- 50 minutes work, 10 minutes break. After 3 rounds, take 30.
+- If a task takes under 2 minutes, do it now.
+- Say no to meetings without an agenda.`},
+
+    {id:'weekly', t:'Weekly Review (Every Sunday, 30 min)', d:
+`- [ ] What did I actually accomplish this week?
+- [ ] What did I say I'd do but didn't? Why?
+- [ ] Money in / money out / money owed
+- [ ] Which projects are at risk?
+- [ ] Who do I need to follow up with?
+- [ ] What's the ONE thing that would make next week a win?
+- [ ] What am I avoiding? (Do that first on Monday.)
+- [ ] Plan the top 3 priorities for next week
+- [ ] Take a full day off. You earned it.`},
+
+    {id:'focus', t:'When You're Distracted Or Overwhelmed', d:
+`**If you're overwhelmed:** Write everything down. Circle the one thing that actually matters. Do that. Ignore the rest for 90 minutes.
+
+**If you're procrastinating:** The task is too big. Cut it in half. Then half again. Do the smallest version.
+
+**If you're anxious:** Ask "what's the worst realistic outcome, and could I survive it?" Almost always the answer is yes.
+
+**If you're bored:** You're probably doing work that's too easy. Raise the difficulty or delegate it.
+
+**If you're stuck:** Talk to a client. Nothing re-energises a founder like hearing a real problem you can solve.`}
+  ]
+},
+
+/* ---------------- NOTES ---------------- */
+{
+  id:'notes', icon:'💡', title:'Notes & Ideas', sub:'Anything else — ideas, scripts, plans, reminders. Add as many as you want.',
+  cards:[
+    {id:'note1', t:'How To Use This Section', d:
+`Tap **+ Add card** to create anything you want — a script, a client idea, a product idea, a reminder, a plan.
+
+Everything you write here is saved in your browser and is instantly searchable from the bar at the top.`}
+  ]
+}
+
+];
+
+/* =========================================================
+   3. STATE
+   ========================================================= */
+const STORE_KEY = 'commandCenter.v1';
+let state = { checks:{}, overrides:{}, custom:{}, deleted:[], profile:{} };
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) state = Object.assign(state, JSON.parse(raw));
+  }catch(e){ console.warn('Could not load saved data', e); }
+}
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch(e){ console.warn('Could not save', e); }
+}
+
+/* =========================================================
+   4. HELPERS
+   ========================================================= */
+let Q = '';
+
+function esc(s){
+  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function inline(s){
+  let e = esc(s);
+  if(Q){
+    const qe = esc(Q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if(qe){
+      try{ e = e.replace(new RegExp(qe, 'gi'), m => '<mark>' + m + '</mark>'); }catch(err){}
+    }
+  }
+  return e.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
+
+function fmt(text, cardId){
+  const lines = String(text || '').split('\n');
+  let out = '', inList = false;
+
+  lines.forEach((raw, i) => {
+    const line = raw.trim();
+
+    if(line.startsWith('- [ ]') || line.startsWith('- [x]') || line.startsWith('- [X]')){
+      if(!inList){ out += '<ul>'; inList = true; }
+      const taskId = cardId + ':' + i;
+      const on = !!state.checks[taskId];
+      out += '<li class="task' + (on ? ' done' : '') + '">' +
+             '<button class="tick' + (on ? ' on' : '') + '" data-check="' + esc(taskId) + '" aria-label="toggle"></button>' +
+             '<span>' + inline(line.slice(5).trim()) + '</span></li>';
+    }
+    else if(line.startsWith('- ')){
+      if(!inList){ out += '<ul>'; inList = true; }
+      out += '<li>' + inline(line.slice(2)) + '</li>';
+    }
+    else {
+      if(inList){ out += '</ul>'; inList = false; }
+      if(line) out += '<p>' + inline(line) + '</p>';
+    }
+  });
+
+  if(inList) out += '</ul>';
+  return out;
+}
+
+function cardPlainText(c){ return (c.t || '') + ' ' + (c.d || '') + ' ' + ((c.tags||[]).join(' ')); }
+function cardMatch(c, q){ return cardPlainText(c).toLowerCase().includes(q); }
+
+function getCards(sec){
+  const base = (sec.cards || []).map((c, i) => Object.assign({}, c, {
+    id: c.id || (sec.id + '#' + i),
+    sec: sec.id,
+    _base: true
+  }));
+
+  const withOverrides = base
+    .filter(c => !state.deleted.includes(c.id))
+    .map(c => {
+      const o = state.overrides[c.id];
+      return o ? Object.assign({}, c, { t:o.t, d:o.d }) : c;
+    });
+
+  const custom = (state.custom[sec.id] || []).map(c => Object.assign({}, c, { sec: sec.id, _custom:true }));
+
+  return withOverrides.concat(custom);
+}
+
+/* =========================================================
+   5. RENDER
+   ========================================================= */
+const contentEl = document.getElementById('content');
+const searchEl  = document.getElementById('search');
+const clearBtn  = document.getElementById('clearBtn');
+const navEl     = document.getElementById('nav');
+
+function quoteOfTheDay(){
+  const d = new Date();
+  const start = new Date(d.getFullYear(), 0, 0);
+  const day = Math.floor((d - start) / 86400000);
+  return QUOTES[day % QUOTES.length];
+}
+
+function renderProfileCard(){
+  const p = state.profile || {};
+  return '<div class="card" style="grid-column:1/-1">' +
+    '<h3>Who I Am</h3>' +
+    '<div class="pgrid">' +
+      '<label>My Name<input data-profile="name" value="' + esc(p.name||'') + '" placeholder="Your name"></label>' +
+      '<label>Business Name<input data-profile="biz" value="' + esc(p.biz||'') + '" placeholder="Your software house name"></label>' +
+      '<label class="full">My Mission (one sentence)<input data-profile="mission" value="' + esc(p.mission||'') + '" placeholder="I help ___ achieve ___ by ___"></label>' +
+      '<label class="full">Why I Started<textarea data-profile="why" placeholder="The real reason. Read it when it gets hard.">' + esc(p.why||'') + '</textarea></label>' +
+      '<label class="full">My Niche<textarea data-profile="niche" placeholder="Who exactly do I serve?">' + esc(p.niche||'') + '</textarea></label>' +
+      '<label class="full">My Unfair Advantage<textarea data-profile="edge" placeholder="Why should they pick me over anyone else?">' + esc(p.edge||'') + '</textarea></label>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderCard(c){
+  if(c.kind === 'quote'){
+    const q = quoteOfTheDay();
+    return '<article class="card quote">' +
+      '<div class="lbl">Quote of the day</div>' +
+      '<blockquote>“' + esc(q.t) + '”</blockquote>' +
+      '<div class="who">— ' + esc(q.a) + '</div>' +
+    '</article>';
+  }
+
+  if(c.kind === 'profile'){
+    return renderProfileCard();
+  }
+
+  const on = !!state.checks[c.id];
+  const tags = (c.tags||[]).map(t => '<span class="tag">' + esc(t) + '</span>').join('');
+
+  return '<article class="card" data-card="' + esc(c.id) + '">' +
+    '<div class="card-actions">' +
+      '<button class="icon-btn edit" data-edit="' + esc(c.id) + '" data-sec="' + esc(c.sec) + '" title="Edit">✎</button>' +
+      '<button class="icon-btn del" data-del="' + esc(c.id) + '" data-sec="' + esc(c.sec) + '" title="Delete">✕</button>' +
+    '</div>' +
+    '<h3>' +
+      (c.track ? '<button class="tick' + (on?' on':'') + '" data-check="' + esc(c.id) + '"></button>' : '') +
+      '<span>' + inline(c.t) + '</span>' +
+    '</h3>' +
+    (c.d ? fmt(c.d, c.id) : '') +
+    (tags ? '<div class="tags">' + tags + '</div>' : '') +
+  '</article>';
+}
+
+function renderSection(sec, cards, addBtn){
+  const head = '<div class="sec-head">' +
+      '<span class="ico">' + sec.icon + '</span>' +
+      '<div><h2>' + esc(sec.title) + '</h2>' +
+      (sec.sub ? '<p>' + inline(sec.sub) + '</p>' : '') + '</div>' +
+    '</div>';
+
+  const body = cards.map(renderCard).join('') +
+    (addBtn ? '<button class="add-card" data-add="' + esc(sec.id) + '">+ Add card</button>' : '');
+
+  return '<section class="section" id="sec-' + esc(sec.id) + '">' + head +
+         '<div class="grid">' + body + '</div></section>';
+}
+
+function render(){
+  const q = searchEl.value.trim().toLowerCase();
+  Q = q;
+  clearBtn.style.display = q ? 'block' : 'none';
+
+  let html = '', hits = 0;
+
+  DATA.forEach(sec => {
+    const cards = getCards(sec);
+    const secMatch = q && (sec.title.toLowerCase().includes(q) || (sec.sub||'').toLowerCase().includes(q));
+    const list = q ? cards.filter(c => secMatch || cardMatch(c, q)) : cards;
+
+    if(q && list.length === 0) return;
+    hits += list.length;
+
+    const showAdd = !q && sec.id !== 'profile';
+    html += renderSection(sec, list, showAdd);
+  });
+
+  if(q && hits === 0){
+    html = '<div class="empty"><div class="big">🔍</div>' +
+           '<h3>Nothing found for “' + esc(searchEl.value.trim()) + '”</h3>' +
+           '<p>Try a different word — like <b>pricing</b>, <b>closing</b>, <b>objection</b>, <b>goals</b> or <b>contract</b>.</p></div>';
+  }
+
+  contentEl.innerHTML = html;
+  updateProgress();
+}
+
+function updateProgress(){
+  const ids = [];
+  DATA.forEach(sec => {
+    getCards(sec).forEach(c => {
+      if(c.kind === 'quote' || c.kind === 'profile') return;
+      if(c.track) ids.push(c.id);
+      String(c.d || '').split('\n').forEach((l, i) => {
+        if(l.trim().startsWith('- [ ]')) ids.push(c.id + ':' + i);
+      });
+    });
+  });
+
+  const done = ids.filter(id => state.checks[id]).length;
+  document.getElementById('pText').textContent = done + ' / ' + ids.length;
+  document.getElementById('pBar').style.width = ids.length ? (done / ids.length * 100) + '%' : '0%';
+}
+
+function buildNav(){
+  navEl.innerHTML = DATA.map(sec =>
+    '<a href="#sec-' + sec.id + '"><span class="ico">' + sec.icon + '</span>' + esc(sec.title) + '</a>'
+  ).join('');
+}
+
+/* =========================================================
+   6. EVENTS
+   ========================================================= */
+searchEl.addEventListener('input', render);
+
+clearBtn.addEventListener('click', () => {
+  searchEl.value = '';
+  searchEl.focus();
+  render();
+});
+
+document.addEventListener('keydown', e => {
+  if((e.ctrlKey || e.metaKey) && e.key === 'k'){
+    e.preventDefault();
+    searchEl.focus();
+    searchEl.select();
+  }
+  if(e.key === 'Escape'){
+    if(document.getElementById('modal').classList.contains('open')) closeModal();
+    else if(document.activeElement === searchEl){ searchEl.value=''; render(); }
+  }
+});
+
+// Toggle checks
+contentEl.addEventListener('click', e => {
+  const tick = e.target.closest('.tick');
+  if(tick){
+    const id = tick.dataset.check;
+    state.checks[id] = !state.checks[id];
+    if(!state.checks[id]) delete state.checks[id];
+    save();
+    render();
+    return;
+  }
+
+  const addBtn = e.target.closest('[data-add]');
+  if(addBtn){ openModal(addBtn.dataset.add, null); return; }
+
+  const editBtn = e.target.closest('[data-edit]');
+  if(editBtn){ openModal(editBtn.dataset.sec, editBtn.dataset.edit); return; }
+
+  const delBtn = e.target.closest('[data-del]');
+  if(delBtn){
+    const id = delBtn.dataset.del, secId = delBtn.dataset.sec;
+    const isCustom = (state.custom[secId] || []).some(c => c.id === id);
+    if(isCustom){
+      state.custom[secId] = state.custom[secId].filter(c => c.id !== id);
+    } else {
+      if(!state.deleted.includes(id)) state.deleted.push(id);
+    }
+    save(); render();
+  }
+});
+
+// Profile inputs
+contentEl.addEventListener('input', e => {
+  const inp = e.target.closest('[data-profile]');
+  if(!inp) return;
+  state.profile = state.profile || {};
+  state.profile[inp.dataset.profile] = inp.value;
+  save();
+});
+
+/* =========================================================
+   7. MODAL
+   ========================================================= */
+const modal    = document.getElementById('modal');
+const mHeading = document.getElementById('mHeading');
+const mTitle   = document.getElementById('mTitle');
+const mText    = document.getElementById('mText');
+const mDelete  = document.getElementById('mDelete');
+let editing = { sec:null, id:null, isNew:false };
+
+function findCard(secId, cardId){
+  const sec = DATA.find(s => s.id === secId);
+  if(!sec) return null;
+  return getCards(sec).find(c => c.id === cardId) || null;
+}
+
+function openModal(secId, cardId){
+  editing = { sec:secId, id:cardId, isNew: !cardId };
+
+  if(!cardId){
+    mHeading.textContent = 'New card';
+    mTitle.value = '';
+    mText.value = '';
+    mDelete.style.display = 'none';
+  } else {
+    const c = findCard(secId, cardId);
+    if(!c) return;
+    mHeading.textContent = 'Edit card';
+    mTitle.value = c.t || '';
+    mText.value = c.d || '';
+    mDelete.style.display = 'block';
+  }
+
+  modal.classList.add('open');
+  setTimeout(() => mTitle.focus(), 40);
+}
+
+function closeModal(){
+  modal.classList.remove('open');
+  editing = { sec:null, id:null, isNew:false };
+}
+
+document.getElementById('mCancel').addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
+
+document.getElementById('mSave').addEventListener('click', () => {
+  const t = mTitle.value.trim();
+  const d = mText.value;
+  if(!t && !d.trim()){ closeModal(); return; }
+
+  if(editing.isNew){
+    const id = 'custom-' + Date.now() + '-' + Math.floor(Math.random()*9999);
+    state.custom[editing.sec] = state.custom[editing.sec] || [];
+    state.custom[editing.sec].push({ id, t: t || 'Untitled', d });
+  } else {
+    state.overrides[editing.id] = { t: t || 'Untitled', d };
+  }
+
+  save(); closeModal(); render();
+});
+
+mDelete.addEventListener('click', () => {
+  if(!editing.id) return;
+  const secId = editing.sec, id = editing.id;
+  const isCustom = (state.custom[secId] || []).some(c => c.id === id);
+
+  if(isCustom){
+    state.custom[secId] = state.custom[secId].filter(c => c.id !== id);
+  } else {
+    delete state.overrides[id];
+    if(!state.deleted.includes(id)) state.deleted.push(id);
+  }
+
+  save(); closeModal(); render();
+});
+
+/* =========================================================
+   8. RESET
+   ========================================================= */
+document.getElementById('resetAll').addEventListener('click', () => {
+  if(confirm('This will erase all your notes, edits, and ticked boxes. Are you sure?')){
+    localStorage.removeItem(STORE_KEY);
+    state = { checks:{}, overrides:{}, custom:{}, deleted:[], profile:{} };
+    render();
+  }
+});
+
+/* =========================================================
+   9. GO
+   ========================================================= */
+load();
+buildNav();
+render();
+</script>
+</body>
+</html>
